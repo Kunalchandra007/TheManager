@@ -1,0 +1,8 @@
+{
+  "app": "python app.py",
+  "context": {
+    "application": "themanager",
+    "environment": "dev",
+    "costCenter": "demo"
+  }
+}

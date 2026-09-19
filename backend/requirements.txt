@@ -1,0 +1,21 @@
+fastapi>=0.104.1
+uvicorn>=0.24.0
+semantic-kernel>=0.4.0
+python-dotenv>=1.0.0
+pyodbc>=4.0.39
+pandas>=2.1.1
+nest-asyncio>=1.5.8
+azure-identity>=1.14.1
+azure-ai-projects==1.0.0b10
+streamlit>=1.28.0
+requests>=2.31.0
+plotly>=5.13.0
+azure-storage-blob>=12.19.0
+md2docx-python>=1.0.0
+Spire.Doc.Free
+python-docx>=0.8.11
+markdown>=3.5.1
+# AWS target runtime (Azure dependencies remain until the cutover is complete)
+boto3>=1.35.0
+python-jose[cryptography]>=3.3.0
+opentelemetry-api>=1.27.0

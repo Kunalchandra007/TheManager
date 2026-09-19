@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "purpose": "AWS migration acceptance scenarios. Expected behavior is captured without fabricating live Azure answers.",
+  "invariants": {
+    "risk_formula": "days_variance / days_until_p6_due * 100",
+    "thresholds": {"low_lt": 5, "medium_lt": 15, "high_gte": 15},
+    "api_contract": ["/api/chat", "/api/sessions", "/api/reports", "/api/heatmap", "/api/thinking-logs"]
+  },
+  "scenarios": [
+    {"id": "general-001", "question": "What does this application do?", "expected_capabilities": ["general_answer"]},
+    {"id": "schedule-001", "question": "Show the equipment schedule risks.", "expected_capabilities": ["schedule_data", "risk_categories"]},
+    {"id": "schedule-002", "question": "Which equipment has the highest delivery risk?", "expected_capabilities": ["schedule_data", "risk_categories", "ranked_findings"]},
+    {"id": "political-001", "question": "What political risks affect this equipment?", "expected_capabilities": ["schedule_context", "political_research", "citations"]},
+    {"id": "political-002", "question": "Assess geopolitical disruption for manufacturing countries.", "expected_capabilities": ["schedule_context", "political_research", "citations"]},
+    {"id": "tariff-001", "question": "Check tariffs for the supplier country.", "expected_capabilities": ["schedule_context", "tariff_research", "citations"]},
+    {"id": "tariff-002", "question": "Are there customs risks for these purchase orders?", "expected_capabilities": ["schedule_context", "tariff_research", "citations"]},
+    {"id": "logistics-001", "question": "Analyze shipping delays for the receiving ports.", "expected_capabilities": ["schedule_context", "logistics_research", "citations"]},
+    {"id": "logistics-002", "question": "What route risks could delay delivery to site?", "expected_capabilities": ["schedule_context", "logistics_research", "citations"]},
+    {"id": "comprehensive-001", "question": "Give me a complete risk report.", "expected_capabilities": ["schedule_data", "political_research", "tariff_research", "logistics_research", "citations", "report"]},
+    {"id": "comprehensive-002", "question": "Create a report of all high risks and mitigations.", "expected_capabilities": ["schedule_data", "specialist_analysis", "report"]},
+    {"id": "session-001", "question": "What did you find in the previous analysis?", "expected_capabilities": ["session_continuity"]},
+    {"id": "report-001", "question": "Generate a downloadable risk report.", "expected_capabilities": ["report", "report_metadata", "durable_storage"]},
+    {"id": "heatmap-001", "question": "Show country risk on the map.", "expected_capabilities": ["heatmap_data", "citations"]},
+    {"id": "error-001", "question": "Run a schedule analysis while the database is unavailable.", "expected_capabilities": ["distinguishable_database_error"]}
+  ]
+}
