@@ -30,13 +30,46 @@ export async function POST(request: Request) {
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data: unknown;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      return NextResponse.json(
+        {
+          status: 'error',
+          response: null,
+          error: `Backend returned invalid JSON (HTTP ${response.status})`,
+          session_id: null,
+        },
+        { status: response.status }
+      );
+    }
+
+    if (!response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
+
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          response: null,
+          error: `Backend returned an unexpected response (HTTP ${response.status})`,
+          session_id: null,
+        },
+        { status: response.status }
+      );
+    }
+
+    const responseData = data as { response?: string; session_id?: string };
 
     return NextResponse.json({
       status: 'success',
-      response: data.response || '',
+      response: responseData.response || '',
       error: null,
-      session_id: data.session_id || null,
+      session_id: responseData.session_id || null,
     });
   } catch (error) {
     return NextResponse.json(

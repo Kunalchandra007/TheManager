@@ -6,6 +6,7 @@ import { ChatMessageList } from '@/components/ui/chat/chat-message-list';
 import { Button } from '@/components/ui/button';
 import { CopyIcon, CornerDownLeft, RefreshCcw, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { fetchAuthSession } from 'aws-amplify/auth';
 // import styles from './markdown-styles.module.css';
 import styles from './markdown-styles-1.module.css';
 import Markdown from 'react-markdown';
@@ -17,6 +18,8 @@ import MapChart from './MapChart';
 import { Tooltip } from 'react-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+const DEMO_QUESTION = 'What are the top procurement risks for this supply chain?';
 
 interface ChatMessage {
   id: string;
@@ -75,7 +78,7 @@ export default function ChatPage() {
       content: 'Hello! I am your AI assistant for procurement risk analysis. How can I assist you today?',
     },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? DEMO_QUESTION : '');
   const [heatmapDataMap, setHeatmapDataMap] = useState<Record<string, HeatmapData[]>>({});
 
   const messagesRef = useRef<HTMLDivElement>(null);
@@ -115,10 +118,18 @@ export default function ChatPage() {
     setIsGenerating(true);
 
     try {
+      const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+      const accessToken = isDemoMode ? undefined : (await fetchAuthSession()).tokens?.accessToken?.toString();
+
+      if (!isDemoMode && !accessToken) {
+        throw new Error('You are not authenticated. Please sign in first.');
+      }
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
           message: input.trim(),

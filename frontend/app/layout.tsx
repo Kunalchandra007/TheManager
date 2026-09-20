@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 // import { Changa } from 'next/font/google';
 import './globals.css';
+import { AmplifyProvider } from './amplify-provider';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -25,12 +26,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased min-h-screen">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <SidebarProvider className="flex flex-col">
-            <SiteHeader />
-            {children}
-          </SidebarProvider>
-        </ThemeProvider>
+        <AmplifyProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <SidebarProvider className="flex flex-col">
+              <SiteHeader />
+              {children}
+            </SidebarProvider>
+          </ThemeProvider>
+        </AmplifyProvider>
       </body>
     </html>
   );

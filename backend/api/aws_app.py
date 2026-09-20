@@ -81,6 +81,19 @@ def create_app(allowed_origins: list[str] | None = None) -> FastAPI:
     async def chat(request: ChatRequest, user: dict[str, Any] = Depends(require_authenticated_user)) -> dict[str, Any]:
         try:
             session_id = request.session_id or str(uuid4())
+            if os.getenv("DEMO_MODE", "false").lower() == "true":
+                return {
+                    "status": "success",
+                    "response": (
+                        "Demo answer: The highest procurement risks are schedule delays, "
+                        "supplier concentration, geopolitical disruption, and logistics "
+                        "bottlenecks. Start by monitoring late milestones, qualifying "
+                        "backup suppliers, and reviewing alternate routes."
+                    ),
+                    "session_id": session_id,
+                    "citations": [],
+                }
+
             agents, schedules, state = runtime()
             state.put_session(session_id, request.message)
             result = agents.run(request.message, schedules.get_schedule_comparison())

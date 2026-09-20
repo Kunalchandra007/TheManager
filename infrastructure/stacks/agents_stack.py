@@ -169,10 +169,10 @@ class AgentsStack(Stack):
                     cognito.OAuthScope.PROFILE,
                 ],
                 callback_urls=[
-                    "https://main.d21imlkj49tuxf.amplifyapp.com",
+                    "https://main.d1brodleufbcp.amplifyapp.com",
                 ],
                 logout_urls=[
-                    "https://main.d21imlkj49tuxf.amplifyapp.com",
+                    "https://main.d1brodleufbcp.amplifyapp.com",
                 ],
             ),
         )
