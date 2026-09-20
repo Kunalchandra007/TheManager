@@ -106,8 +106,6 @@ The system:
 
 This agent architecture enables specialized risk analysis while maintaining a cohesive conversation flow, allowing each agent to focus on its area of expertise.
 
-![System Architecture Diagram](docs/images/system_architecture_1.jpg)
-
 ## Backend Technologies
 
 - **Azure AI Agent Service** – Foundation for orchestrating specialized multi-agent workflows in a modular architecture  
@@ -153,45 +151,30 @@ TheManager solves critical business challenges by:
 - Consolidated reporting synthesizes insights into actionable recommendations
 
 ### Interactive Risk Analysis
-![Chat Interface 1](docs/images/chat_interface_1.png)
-![Chat Interface 2](docs/images/chat_interface_2.png)
-
 - Conversational interface for natural risk queries and analysis
 - Real-time political risk intelligence using Bing Search integration
 - Automatic calculation of schedule variances and risk levels
 - Detailed recommendations for risk mitigation
 
 ### Professional Report Generation
-![Report Management](docs/images/report_management_1.png)
-
 - Automatically generate formatted Word documents with risk analysis
 - Store reports centrally in Azure Storage for easy access
 - Track report history and filter by project, equipment, or date
 - Share reports with stakeholders via secure download links
 
 ### Advanced Visualization
-![Risk Visualizations](docs/images/risk_visualization_1.gif)
-![Risk Visualizations](docs/images/risk_visualization.png)
-
 - Interactive heatmaps showing risk distribution by country
 - Schedule variance charts highlighting delivery timeline issues
 - Risk impact assessment matrices for severity understanding
 - Trend analysis to identify emerging risk patterns
 
 ### Transparent AI Reasoning
-![Thinking Logs](docs/images/thinking_logs_1.gif)
-![Thinking Logs](docs/images/thinking_logs.png)
-
 - Complete visibility into AI decision processes
 - Verification of information sources with citation tracking
 - Comprehensive audit trail of system operations
 - Identify reasoning behind specific recommendations
 
 ### Developer View via Streamlit
-![Developer View 1](docs/images/system_developer_1.png)
-![Developer View 2](docs/images/system_developer_2.png)
-![Developer View 3](docs/images/system_developer_3.png)
-![Developer View 4](docs/images/system_developer_4.png)
 - **System Testing Dashboard**: Interactive UI to validate Azure connections and database settings
 - **Environment Diagnostics**: Visual indicators for successful connection tests
 - **Error Visualization**: User-friendly display of system errors and troubleshooting guidance
@@ -201,8 +184,6 @@ TheManager solves critical business challenges by:
 The Developer View is built directly into the Streamlit interface, providing a convenient way for developers to test, monitor, and troubleshoot the system without requiring separate tools or command-line access.
 
 ## System Components
-![System Components Diagram](docs/images/system_components_1.jpg)
-
 The system consists of several interrelated components that work together to provide comprehensive risk analysis. The system follows a modular, multi-agent design pattern:
 
 ### Agent Layer
@@ -381,22 +362,3 @@ backend/
 └── requirements.txt           # Project dependencies
 ```
 
-## License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-```
-Copyright 2025
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
