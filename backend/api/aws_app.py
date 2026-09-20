@@ -6,13 +6,23 @@ This is the migration target; it deliberately does not import Azure/Semantic Ker
 from __future__ import annotations
 
 from enum import StrEnum
+import os
+from functools import lru_cache
 from uuid import uuid4
+from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from domain.what_if import simulate_delay
+from config.aws_settings import AwsSettings
+from repositories.aurora_data_api import AuroraDataApiRepository
+from repositories.dynamo_state import DynamoStateRepository
+from services.agents import SpecialistOrchestrator
+from services.auth import require_authenticated_user
+from services.search import SearchService
+from services.tavily import TavilyProvider
 
 
 class ErrorKind(StrEnum):
@@ -41,6 +51,18 @@ class ActionProposalRequest(BaseModel):
     evidence: list[dict[str, str]] = []
 
 
+@lru_cache(maxsize=1)
+def runtime() -> tuple[SpecialistOrchestrator, AuroraDataApiRepository, DynamoStateRepository]:
+    settings = AwsSettings.from_environment()
+    table_names = {
+        "sessions": os.environ["SESSIONS_TABLE"], "events": os.environ["EVENTS_TABLE"],
+        "workflow_runs": os.environ["WORKFLOW_RUNS_TABLE"],
+    }
+    search = SearchService(TavilyProvider(settings.tavily_secret_name, settings.region))
+    agents = SpecialistOrchestrator(settings.supervisor_model_id, os.environ["BEDROCK_ROUTINE_MODEL_ID"], os.environ["BEDROCK_GUARDRAIL_ID"], search)
+    return agents, AuroraDataApiRepository(settings.database_cluster_arn, settings.database_secret_arn), DynamoStateRepository(table_names)
+
+
 def create_app(allowed_origins: list[str] | None = None) -> FastAPI:
     app = FastAPI(title="TheManager API", version="2.0.0")
     app.add_middleware(
@@ -56,9 +78,30 @@ def create_app(allowed_origins: list[str] | None = None) -> FastAPI:
         return {"status": "ok", "service": "themanager-api"}
 
     @app.post("/api/chat")
-    async def chat(request: ChatRequest) -> dict[str, str]:
-        # Invocation is wired by Lambda configuration in Phase 4; response shape stays stable now.
-        return {"status": "accepted", "response": "AWS agent runtime is not configured.", "session_id": request.session_id or str(uuid4())}
+    async def chat(request: ChatRequest, user: dict[str, Any] = Depends(require_authenticated_user)) -> dict[str, Any]:
+        try:
+            session_id = request.session_id or str(uuid4())
+            agents, schedules, state = runtime()
+            state.put_session(session_id, request.message)
+            result = agents.run(request.message, schedules.get_schedule_comparison())
+            state.append_event({"event_id": str(uuid4()), "session_id": session_id, "agent_name": "supervisor", "action": "route", "route": result["route"], "user": user.get("sub")})
+            return {"status": "success", "response": result["report"], "session_id": session_id, "citations": result["citations"]}
+        except ValueError as error:
+            raise HTTPException(status_code=503, detail={"kind": ErrorKind.DATABASE, "message": str(error)}) from error
+        except Exception as error:
+            raise HTTPException(status_code=502, detail={"kind": ErrorKind.AI, "message": str(error)}) from error
+
+    @app.post("/workflow/run")
+    async def run_workflow(_: dict[str, Any] = Depends(require_authenticated_user)) -> dict[str, str]:
+        state_machine_arn = os.getenv("WORKFLOW_STATE_MACHINE_ARN")
+        if not state_machine_arn:
+            raise HTTPException(status_code=503, detail="Workflow is not configured")
+        try:
+            import boto3
+            execution = boto3.client("stepfunctions").start_execution(stateMachineArn=state_machine_arn, input="{}")
+            return {"status": "started", "execution_arn": execution["executionArn"]}
+        except Exception as error:
+            raise HTTPException(status_code=502, detail={"kind": ErrorKind.TIMEOUT, "message": str(error)}) from error
 
     @app.get("/api/sessions")
     async def sessions() -> dict[str, object]:
@@ -77,8 +120,9 @@ def create_app(allowed_origins: list[str] | None = None) -> FastAPI:
         return []
 
     @app.get("/workflow/status/{workflow_id}")
-    async def workflow_status(workflow_id: str) -> dict[str, str]:
-        return {"workflow_id": workflow_id, "status": "not_found"}
+    async def workflow_status(workflow_id: str, _: dict[str, Any] = Depends(require_authenticated_user)) -> dict[str, Any]:
+        _, _, state = runtime()
+        return state.get_workflow_status(workflow_id) or {"workflow_id": workflow_id, "status": "not_found"}
 
     @app.post("/api/what-if")
     async def what_if(request: WhatIfRequest) -> dict[str, object]:

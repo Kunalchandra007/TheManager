@@ -6,6 +6,7 @@ from aws_cdk import (
     Stack,
     Tags,
     aws_cognito as cognito,
+    aws_bedrock as bedrock,
     aws_iam as iam,
     aws_logs as logs,
     aws_secretsmanager as secretsmanager,
@@ -24,6 +25,10 @@ class AgentsStack(Stack):
         application: str,
         deployment_environment: str,
         cost_center: str,
+        aws_region: str,
+        supervisor_model_id: str,
+        routine_model_id: str,
+        tavily_secret_name: str,
         **kwargs: object,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -49,8 +54,31 @@ class AgentsStack(Stack):
                 resources=[self.agent_log_group.log_group_arn],
             )
         )
-        self.tavily_secret = secretsmanager.Secret.from_secret_name_v2(self, "TavilySecret", "themanager/tavily")
+        self.agent_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"))
+        self.agent_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AWSXRayDaemonWriteAccess"))
+        self.tavily_secret = secretsmanager.Secret.from_secret_name_v2(self, "TavilySecret", tavily_secret_name)
         self.tavily_secret.grant_read(self.agent_role)
+        self.guardrail = bedrock.CfnGuardrail(
+            self,
+            "AgentGuardrail",
+            name=f"{application}-{deployment_environment}-guardrail",
+            description="Blocks harmful content and prompt attacks in TheManager agent calls.",
+            blocked_input_messaging="This request cannot be processed.",
+            blocked_outputs_messaging="The generated response was blocked by safety controls.",
+            content_policy_config=bedrock.CfnGuardrail.ContentPolicyConfigProperty(
+                filters_config=[
+                    bedrock.CfnGuardrail.ContentFilterConfigProperty(input_strength="MEDIUM", output_strength="MEDIUM", type=kind)
+                    for kind in ("HATE", "INSULTS", "SEXUAL", "VIOLENCE", "PROMPT_ATTACK")
+                ]
+            ),
+        )
+        routine_model_resource = routine_model_id if routine_model_id.startswith("arn:") else self.format_arn(
+            service="bedrock", region=aws_region, resource=f"inference-profile/{routine_model_id}"
+        )
+        self.agent_role.add_to_policy(iam.PolicyStatement(
+            actions=["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream", "bedrock:ApplyGuardrail"],
+            resources=[supervisor_model_id, routine_model_resource, self.guardrail.attr_guardrail_arn],
+        ))
         self.user_pool = cognito.UserPool(
             self,
             "Users",
@@ -74,3 +102,4 @@ class AgentsStack(Stack):
         CfnOutput(self, "AgentRoleArn", value=self.agent_role.role_arn)
         CfnOutput(self, "UserPoolId", value=self.user_pool.user_pool_id)
         CfnOutput(self, "UserPoolClientId", value=self.user_pool_client.user_pool_client_id)
+        CfnOutput(self, "GuardrailArn", value=self.guardrail.attr_guardrail_arn)

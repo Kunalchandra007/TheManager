@@ -19,13 +19,14 @@ class SupervisorDecision:
 class BedrockSupervisor:
     """Requests a JSON routing decision from Bedrock and validates its shape."""
 
-    def __init__(self, model_id: str, client: Any = None) -> None:
+    def __init__(self, model_id: str, client: Any = None, guardrail_id: str | None = None) -> None:
         self.model_id = model_id
         if client is None:
             import boto3
 
             client = boto3.client("bedrock-runtime")
         self._client = client
+        self._guardrail_id = guardrail_id
 
     def decide(self, question: str) -> SupervisorDecision:
         prompt = (
@@ -33,11 +34,18 @@ class BedrockSupervisor:
             f"Allowed specialists: {', '.join(SPECIALISTS)}. Return JSON only with "
             '{"specialists":[...],"rationale":"..."}. Question: ' + question
         )
-        response = self._client.converse(
-            modelId=self.model_id,
-            messages=[{"role": "user", "content": [{"text": prompt}]}],
-            inferenceConfig={"maxTokens": 180, "temperature": 0},
-        )
+        request: dict[str, Any] = {
+            "modelId": self.model_id,
+            "messages": [{"role": "user", "content": [{"text": prompt}]}],
+            "inferenceConfig": {"maxTokens": 180, "temperature": 0},
+        }
+        if self._guardrail_id:
+            request["guardrailConfig"] = {
+                "guardrailIdentifier": self._guardrail_id,
+                "guardrailVersion": "DRAFT",
+                "trace": "enabled",
+            }
+        response = self._client.converse(**request)
         text = response["output"]["message"]["content"][0]["text"]
         payload = json.loads(text)
         specialists = [name for name in payload.get("specialists", []) if name in SPECIALISTS]

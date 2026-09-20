@@ -33,6 +33,22 @@ interface HeatmapData {
   datetime_stamp: string;
 }
 
+interface StoredMessage {
+  user_query?: string;
+  agent_output?: string;
+  agent_name?: string;
+  action?: string;
+}
+
+interface StoredConversation {
+  conversation_id: string;
+  messages: StoredMessage[];
+}
+
+interface StoredSession {
+  conversations: StoredConversation[];
+}
+
 const ChatAiIcons = [
   {
     icon: CopyIcon,
@@ -134,7 +150,7 @@ export default function ChatPage() {
         };
         setMessages((prev) => [...prev, errorMessage]);
       }
-    } catch (error) {
+    } catch {
       // Handle network error
       const errorMessage: ChatMessage = {
         id: Date.now().toString(),
@@ -176,9 +192,9 @@ export default function ChatPage() {
       console.log('Session data:', data);
 
       // Transform the API response into chat messages
-      const transformedMessages = data.conversations.flatMap((conv: any) =>
+      const transformedMessages = (data as StoredSession).conversations.flatMap((conv) =>
         conv.messages
-          .map((msg: any, i: number) => {
+          .map((msg, i) => {
             const messages: ChatMessage[] = [];
 
             if (i === 0 && msg.user_query) {

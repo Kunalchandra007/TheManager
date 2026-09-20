@@ -1,10 +1,8 @@
 'use client';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import React from 'react';
-import { CodeBlock, dracula, github } from 'react-code-blocks';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useTheme } from 'next-themes';
 
 interface ButtonCodeblockProps {
   code: string;
@@ -13,7 +11,6 @@ interface ButtonCodeblockProps {
 
 export default function CodeDisplayBlock({ code, lang }: ButtonCodeblockProps) {
   const [isCopied, setisCopied] = React.useState(false);
-  const { theme } = useTheme();
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
@@ -33,13 +30,9 @@ export default function CodeDisplayBlock({ code, lang }: ButtonCodeblockProps) {
           <CopyIcon className="w-4 h-4 scale-100 transition-all" />
         )}
       </Button>
-      <CodeBlock
-        customStyle={theme === 'dark' ? { background: '#303033' } : { background: '#fcfcfc' }}
-        text={code}
-        language="tsx"
-        showLineNumbers={false}
-        theme={theme === 'dark' ? dracula : github}
-      />
+      <code className="block overflow-x-auto rounded-md bg-muted p-4 font-mono text-sm" data-language={lang || 'text'}>
+        {code}
+      </code>
     </div>
   );
 }

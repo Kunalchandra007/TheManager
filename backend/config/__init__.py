@@ -1,9 +1,5 @@
-"""Configuration module initialization."""
+"""Configuration modules.
 
-from .settings import initialize_ai_agent_settings
-
-__all__ = [
-    'initialize_ai_agent_settings',
-    'get_database_connection_string',
-    'get_project_client'
-]
+Import explicit legacy Azure or target AWS settings modules so optional provider
+dependencies do not prevent the AWS runtime from starting.
+"""

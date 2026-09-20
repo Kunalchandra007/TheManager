@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FolderIcon, MessageSquare, MoreHorizontalIcon, ShareIcon } from 'lucide-react';
+import { FolderIcon, MoreHorizontalIcon, ShareIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import {
@@ -7,7 +7,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,

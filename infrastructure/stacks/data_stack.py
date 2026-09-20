@@ -17,7 +17,7 @@ from constructs import Construct
 
 
 class DataStack(Stack):
-    """Creates encrypted stores; data is retained when a stack is removed."""
+    """Creates encrypted stores with an explicit demo/production retention switch."""
 
     def __init__(
         self,
@@ -27,9 +27,13 @@ class DataStack(Stack):
         application: str,
         deployment_environment: str,
         cost_center: str,
+        aws_region: str,
+        retain_data: bool,
+        budget_notification_email: str,
         **kwargs: object,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        removal_policy = RemovalPolicy.RETAIN if retain_data else RemovalPolicy.DESTROY
         Tags.of(self).add("Application", application)
         Tags.of(self).add("Environment", deployment_environment)
         Tags.of(self).add("ManagedBy", "AWS-CDK")
@@ -42,8 +46,8 @@ class DataStack(Stack):
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             enforce_ssl=True,
             versioned=True,
-            removal_policy=RemovalPolicy.RETAIN,
-            auto_delete_objects=False,
+            removal_policy=removal_policy,
+            auto_delete_objects=not retain_data,
         )
         budgets.CfnBudget(
             self,
@@ -54,17 +58,28 @@ class DataStack(Stack):
                 budget_type="COST",
                 time_unit="MONTHLY",
             ),
+            notifications_with_subscribers=[
+                budgets.CfnBudget.NotificationWithSubscribersProperty(
+                    notification=budgets.CfnBudget.NotificationProperty(
+                        comparison_operator="GREATER_THAN",
+                        notification_type="ACTUAL",
+                        threshold=80,
+                        threshold_type="PERCENTAGE",
+                    ),
+                    subscribers=[budgets.CfnBudget.SubscriberProperty(address=budget_notification_email, subscription_type="EMAIL")],
+                )
+            ],
         )
 
         self.tables = {
-            name: self._table(name, partition_key, ttl_attribute)
+            name: self._table(name, partition_key, ttl_attribute, removal_policy)
             for name, partition_key, ttl_attribute in (
                 ("Sessions", "session_id", "expires_at"),
                 ("Events", "event_id", "expires_at"),
                 ("ThinkingLogs", "thinking_log_id", "expires_at"),
-                ("Alerts", "alert_id", None),
-                ("Actions", "action_id", None),
-                ("RiskSnapshots", "snapshot_id", None),
+                ("Alerts", "alert_id", "expires_at"),
+                ("Actions", "action_id", "expires_at"),
+                ("RiskSnapshots", "snapshot_id", "expires_at"),
                 ("WorkflowRuns", "workflow_id", "expires_at"),
             )
         }
@@ -77,7 +92,7 @@ class DataStack(Stack):
                 generate_string_key="password",
                 exclude_punctuation=True,
             ),
-            removal_policy=RemovalPolicy.RETAIN,
+            removal_policy=removal_policy,
         )
 
         vpc = ec2.Vpc(
@@ -106,7 +121,7 @@ class DataStack(Stack):
             db_subnet_group_description="TheManager Aurora isolated subnets",
             subnet_ids=[subnet.subnet_id for subnet in vpc.isolated_subnets],
         )
-        cluster = rds.CfnDBCluster(
+        self.database_cluster = rds.CfnDBCluster(
             self,
             "AuroraCluster",
             engine="aurora-postgresql",
@@ -122,26 +137,30 @@ class DataStack(Stack):
                 min_capacity=0.5,
                 max_capacity=1.0,
             ),
+            deletion_protection=retain_data,
         )
-        cluster.add_dependency(subnet_group)
+        self.database_cluster.apply_removal_policy(removal_policy)
+        self.database_cluster.add_dependency(subnet_group)
         instance = rds.CfnDBInstance(
             self,
             "AuroraServerlessInstance",
-            db_cluster_identifier=cluster.ref,
+            db_cluster_identifier=self.database_cluster.ref,
             db_instance_class="db.serverless",
             engine="aurora-postgresql",
         )
-        instance.add_dependency(cluster)
+        instance.add_dependency(self.database_cluster)
+        instance.apply_removal_policy(removal_policy)
 
         CfnOutput(self, "ReportBucketName", value=self.report_bucket.bucket_name)
         CfnOutput(self, "DatabaseSecretArn", value=self.database_secret.secret_arn)
-        CfnOutput(self, "DatabaseClusterArn", value=cluster.attr_db_cluster_arn)
+        CfnOutput(self, "DatabaseClusterArn", value=self.database_cluster.attr_db_cluster_arn)
 
     def _table(
         self,
         name: str,
         partition_key: str,
         ttl_attribute: str | None,
+        removal_policy: RemovalPolicy,
     ) -> dynamodb.Table:
         return dynamodb.Table(
             self,
@@ -151,5 +170,5 @@ class DataStack(Stack):
             encryption=dynamodb.TableEncryption.AWS_MANAGED,
             point_in_time_recovery=True,
             time_to_live_attribute=ttl_attribute,
-            removal_policy=RemovalPolicy.RETAIN,
+            removal_policy=removal_policy,
         )

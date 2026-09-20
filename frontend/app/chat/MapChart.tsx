@@ -1,9 +1,9 @@
 import React, { memo, useState } from 'react';
-import { ZoomableGroup, ComposableMap, Geographies, Geography, Graticule, Sphere } from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, Graticule, Sphere } from 'react-simple-maps';
 import countries from '@/app/dashboard/countries.json';
 import '@/app/dashboard/styles.css';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 
@@ -40,6 +40,8 @@ type CountryRisk = {
   breakdown: string;
 };
 
+type GeoFeature = { rsmKey: string; properties: { name: string } };
+
 type MapChartProps = {
   setTooltipContent: (content: string) => void;
   breakdown: CountryRisk[];
@@ -52,7 +54,7 @@ const MapChart = ({ setTooltipContent, breakdown }: MapChartProps) => {
   const parseBreakdown = (data: string): RiskBreakdownItem[] => {
     try {
       return JSON.parse(data);
-    } catch (e) {
+    } catch {
       return [];
     }
   };
@@ -81,8 +83,8 @@ const MapChart = ({ setTooltipContent, breakdown }: MapChartProps) => {
         <Sphere id="risk-map-sphere" fill="transparent" stroke="#E4E5E6" strokeWidth={0.5} />
         <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
         <Geographies geography={countries}>
-          {({ geographies }: { geographies: any[] }) =>
-            geographies.map((geo: any) => {
+          {({ geographies }: { geographies: GeoFeature[] }) =>
+            geographies.map((geo) => {
               const countryData = breakdown.find((item: CountryRisk) => item.country === geo.properties.name);
               const likelihood = countryData ? parseInt(countryData.average_risk) : 0;
 

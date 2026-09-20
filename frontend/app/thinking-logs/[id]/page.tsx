@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import { useEffect, useRef, useState } from 'react';
 import LeaderLine from 'leader-line-new';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,11 +9,8 @@ import {
   Bot,
   BrainIcon,
   ChevronDown,
-  Clock4Icon,
   ScrollTextIcon,
-  SparkleIcon,
   User,
-  UserCircle,
   Workflow,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -29,6 +26,17 @@ import { Button } from '@/components/ui/button';
 const isBrowser = typeof window !== 'undefined';
 
 const MotionCard = motion(Card);
+
+type Thought = {
+  thinking_stage: string;
+  thinking_stage_output: string;
+  thought_content: string;
+  created_date: string;
+};
+
+type Agent = { agent_name: string; thoughts: Thought[] };
+type Conversation = { conversation_id: string; user_query: string; agents: Agent[] };
+type ThinkingData = { conversations: Conversation[] };
 
 const getRandomColor = (seed: string) => {
   const colors = [
@@ -58,7 +66,7 @@ const getRandomColor = (seed: string) => {
 const MotionChevron = motion(ChevronDown);
 
 // Add this component before the ThinkingLogPage component
-const CollapsibleSection = ({ thought }: { thought: any }) => {
+const CollapsibleSection = ({ thought }: { thought: Thought }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -92,11 +100,11 @@ const CollapsibleSection = ({ thought }: { thought: any }) => {
 };
 
 export default function ThinkingLogPage() {
-  const [thinkingData, setThinkingData] = useState<any>(null);
+  const [thinkingData, setThinkingData] = useState<ThinkingData | null>(null);
   const [mounted, setMounted] = useState(false);
   const params = useParams();
   const agentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const lineRefs = useRef<any[]>([]);
+  const lineRefs = useRef<LeaderLine[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -109,7 +117,7 @@ export default function ThinkingLogPage() {
         try {
           const response = await fetch(`/api/thinking-logs/${params.id}`);
           const data = await response.json();
-          setThinkingData(data);
+          setThinkingData(data as ThinkingData);
         } catch (error) {
           console.error('Error fetching thinking logs:', error);
         }
@@ -142,7 +150,7 @@ export default function ThinkingLogPage() {
     const timer = setTimeout(() => {
       const conversations = thinkingData?.conversations;
 
-      conversations.forEach((conversation: any) => {
+      conversations.forEach((conversation) => {
         // Connect agents within each conversation
         for (let i = 0; i < conversation.agents.length - 1; i++) {
           const currentAgent = conversation.agents[i];
@@ -216,7 +224,7 @@ export default function ThinkingLogPage() {
         </div>
         <div>
           <div className="flex flex-col">
-            {thinkingData?.conversations.map((conversation: any, index: number) => (
+            {thinkingData?.conversations.map((conversation, index) => (
               <motion.div
                 key={conversation.conversation_id}
                 className="w-full mb-8"
@@ -235,7 +243,7 @@ export default function ThinkingLogPage() {
                   </h3>
 
                   <div className="flex flex-col gap-3">
-                    {conversation.agents.map((agent: any, agentIndex: number) => (
+                    {conversation.agents.map((agent, agentIndex) => (
                       <motion.div
                         key={`${conversation.conversation_id}-${agent.agent_name}`}
                         ref={(el) => {
@@ -258,7 +266,7 @@ export default function ThinkingLogPage() {
                           </span>
                         </div>
                         <VerticalTimeline lineColor="#ded4ff" layout="1-column-left">
-                          {agent.thoughts.map((thought: any, thoughtIndex: number) => (
+                          {agent.thoughts.map((thought, thoughtIndex) => (
                             <VerticalTimelineElement
                               key={thoughtIndex}
                               icon={<BrainIcon className="w-2 h-2 p-1 text-default" />}

@@ -15,7 +15,12 @@ class AwsSettings:
 
     @classmethod
     def from_environment(cls) -> "AwsSettings":
-        required = {key: os.getenv(key) for key in ("AWS_REGION", "BEDROCK_SUPERVISOR_MODEL_ID", "REPORT_BUCKET", "AURORA_CLUSTER_ARN", "AURORA_SECRET_ARN")}
+        configured_region = os.getenv("THEMANAGER_AWS_REGION") or os.getenv("AWS_REGION")
+        runtime_region = os.getenv("AWS_REGION")
+        if configured_region and runtime_region and configured_region != runtime_region:
+            raise ValueError("THEMANAGER_AWS_REGION must match the Lambda AWS_REGION")
+        required = {key: os.getenv(key) for key in ("BEDROCK_SUPERVISOR_MODEL_ID", "REPORT_BUCKET", "AURORA_CLUSTER_ARN", "AURORA_SECRET_ARN")}
+        required["AWS_REGION"] = configured_region
         missing = [key for key, value in required.items() if not value]
         if missing:
             raise ValueError(f"Missing AWS runtime configuration: {', '.join(missing)}")

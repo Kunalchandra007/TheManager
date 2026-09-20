@@ -16,14 +16,16 @@ type MapChartProps = {
   sliderValue: number[];
 };
 
+type GeoFeature = { rsmKey: string; properties: { name: string } };
+
 const MapChart = ({ setTooltipContent, sliderValue }: MapChartProps) => {
   return (
     <div>
       <ComposableMap>
         <ZoomableGroup>
           <Geographies geography={countries}>
-            {({ geographies }: { geographies: any[] }) =>
-              geographies.map((geo: any) => (
+            {({ geographies }: { geographies: GeoFeature[] }) =>
+              geographies.map((geo) => (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}

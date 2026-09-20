@@ -4,7 +4,7 @@ import { ColumnDef } from '@tanstack/react-table';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ExternalLink, ArrowUpDown, FileText, FlaskConical } from 'lucide-react';
+import { ArrowUpDown, FlaskConical } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
