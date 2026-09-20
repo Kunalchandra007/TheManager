@@ -6,7 +6,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
     const apiUrl = `${backendUrl}/api/sessions/${id}`;
 
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: request.headers.get('authorization') ?? '',
+      },
+    });
     const data = await response.json();
 
     if (!response.ok) {

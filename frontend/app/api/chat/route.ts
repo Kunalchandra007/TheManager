@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: request.headers.get('authorization') ?? '',
       },
       body: JSON.stringify({
         message,
