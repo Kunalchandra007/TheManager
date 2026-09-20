@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 // import { Changa } from 'next/font/google';
 import './globals.css';
 import { AmplifyProvider } from './amplify-provider';
+import { AuthGuard } from './auth-guard';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -27,12 +28,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased min-h-screen">
         <AmplifyProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <SidebarProvider className="flex flex-col">
-              <SiteHeader />
-              {children}
-            </SidebarProvider>
-          </ThemeProvider>
+          <AuthGuard>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+              <SidebarProvider className="flex flex-col">
+                <SiteHeader />
+                {children}
+              </SidebarProvider>
+            </ThemeProvider>
+          </AuthGuard>
         </AmplifyProvider>
       </body>
     </html>

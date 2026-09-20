@@ -17,6 +17,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 interface Session {
   session_id: string;
@@ -38,7 +39,7 @@ export function ChatSessionSidebar({ variant, onSessionSelect }: ChatSessionSide
   React.useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await fetch('/api/sessions');
+        const response = await authenticatedFetch('/api/sessions');
         const data = await response.json();
         if (data.status === 'success' && Array.isArray(data.sessions)) {
           setSessions(data.sessions);

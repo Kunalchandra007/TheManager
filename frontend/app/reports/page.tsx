@@ -4,6 +4,7 @@ import { Report, columns } from './columns';
 import { DataTable } from './data-table';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 export default function ReportsPage() {
   const [data, setData] = useState<Report[]>([]);
@@ -12,7 +13,7 @@ export default function ReportsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/reports');
+        const response = await authenticatedFetch('/api/reports');
         if (!response.ok) {
           throw new Error('Failed to fetch reports');
         }

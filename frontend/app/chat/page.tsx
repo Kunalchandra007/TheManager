@@ -18,6 +18,7 @@ import MapChart from './MapChart';
 import { Tooltip } from 'react-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 const DEMO_QUESTION = 'What are the top procurement risks for this supply chain?';
 
@@ -198,7 +199,7 @@ export default function ChatPage() {
   const loadSession = async (id: string) => {
     console.log('Loading session:', id);
     try {
-      const response = await fetch(`/api/chat/${id}`);
+      const response = await authenticatedFetch(`/api/chat/${id}`);
       const data = await response.json();
       console.log('Session data:', data);
 
@@ -249,7 +250,7 @@ export default function ChatPage() {
       // Fetch heatmap data for each relevant conversation
       for (const msg of politicalRiskMessages) {
         try {
-          const response = await fetch(`/api/heatmap?conversation_id=${msg.convo_id}&session_id=${id}`);
+          const response = await authenticatedFetch(`/api/heatmap?conversation_id=${msg.convo_id}&session_id=${id}`);
           if (response.ok) {
             const data = await response.json();
             setHeatmapDataMap((prev) => ({
@@ -269,7 +270,7 @@ export default function ChatPage() {
   const handleHeatmapClick = async (convoId: string) => {
     try {
       console.log('Heatmap clicked:', convoId, sessionId);
-      const response = await fetch(`/api/heatmap?conversation_id=${convoId}&session_id=${sessionId}`);
+      const response = await authenticatedFetch(`/api/heatmap?conversation_id=${convoId}&session_id=${sessionId}`);
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }

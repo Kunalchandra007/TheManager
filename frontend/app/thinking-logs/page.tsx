@@ -4,6 +4,7 @@ import { ThinkingLog, columns } from './columns';
 import { DataTable } from './data-table';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 export default function ThinkingLogsPage() {
   const [data, setData] = useState<ThinkingLog[]>([]);
@@ -12,7 +13,7 @@ export default function ThinkingLogsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/thinking-logs');
+        const response = await authenticatedFetch('/api/thinking-logs');
         if (!response.ok) {
           throw new Error('Failed to fetch thinking logs');
         }

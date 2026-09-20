@@ -1,9 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
-    const response = await fetch(`${backendUrl}/api/reports`);
+    const response = await fetch(`${backendUrl}/api/reports`, {
+      headers: { Authorization: request.headers.get('authorization') ?? '' },
+    });
     const data = await response.json();
     console.log(data);
 

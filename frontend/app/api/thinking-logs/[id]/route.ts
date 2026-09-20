@@ -1,12 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const id = (await params).id;
     const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
     const apiUrl = `${backendUrl}/api/thinking-logs-by-session-id/${id}`;
 
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      headers: { Authorization: request.headers.get('authorization') ?? '' },
+    });
     const data = await response.json();
 
     if (!response.ok) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 type Result = { before: { percentage: number; flag: string }; after: { percentage: number; flag: string } };
 
@@ -9,7 +10,7 @@ export default function WhatIfPage() {
   const [result, setResult] = useState<Result | null>(null);
 
   async function simulate() {
-    const response = await fetch('/api/what-if', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ equipment_id: 1, days_variance: 4, days_until_due: 100, delay_days: delayDays }) });
+    const response = await authenticatedFetch('/api/what-if', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ equipment_id: 1, days_variance: 4, days_until_due: 100, delay_days: delayDays }) });
     setResult(await response.json());
   }
 
