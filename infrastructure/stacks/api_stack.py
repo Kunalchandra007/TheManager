@@ -39,6 +39,20 @@ class ApiStack(Stack):
                 resources=[agents.guardrail.attr_guardrail_arn],
             )
         )
+        self.api_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "aws-marketplace:ViewSubscriptions",
+                    "aws-marketplace:Subscribe",
+                ],
+                resources=["*"],
+                conditions={
+                    "StringEquals": {
+                        "aws:CalledViaLast": "bedrock.amazonaws.com",
+                    }
+                },
+            )
+        )
         self.function = lambda_.DockerImageFunction(self, "Api", code=lambda_.DockerImageCode.from_image_asset("../backend", file="Dockerfile.api"), role=self.api_role, memory_size=2048, timeout=Duration.minutes(15), tracing=lambda_.Tracing.ACTIVE, environment={
             "THEMANAGER_AWS_REGION": self.region, "BEDROCK_SUPERVISOR_MODEL_ID": supervisor_model_id, "BEDROCK_ROUTINE_MODEL_ID": routine_model_id, "BEDROCK_GUARDRAIL_ID": agents.guardrail.attr_guardrail_arn,
             "REPORT_BUCKET": data.report_bucket.bucket_name, "AURORA_CLUSTER_ARN": data.database_cluster.attr_db_cluster_arn, "AURORA_SECRET_ARN": data.database_secret.secret_arn, "TAVILY_SECRET_NAME": tavily_secret_name,
