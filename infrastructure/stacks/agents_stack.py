@@ -95,7 +95,9 @@ class AgentsStack(Stack):
                 filters_config=[
                     bedrock.CfnGuardrail.ContentFilterConfigProperty(
                         input_strength="MEDIUM",
-                        output_strength="MEDIUM",
+                        output_strength=(
+                            "NONE" if kind == "PROMPT_ATTACK" else "MEDIUM"
+                        ),
                         type=kind,
                     )
                     for kind in (
