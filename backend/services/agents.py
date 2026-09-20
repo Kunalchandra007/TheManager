@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import logging
 from typing import Any
 
 from services.observability import trace
@@ -18,6 +19,7 @@ SPECIALIST_PROMPTS = {
     "assistant": "Answer the user directly and concisely using the supplied context.",
     "reporting": "Produce a concise risk report. Every research-backed claim must cite a supplied source URL.",
 }
+logger = logging.getLogger(__name__)
 
 
 class SpecialistOrchestrator:
@@ -47,10 +49,24 @@ class SpecialistOrchestrator:
         return {"route": decision.specialists, "rationale": decision.rationale, "findings": outputs, "report": report, "citations": citations}
 
     def _invoke(self, specialist: str, context: dict[str, Any]) -> str:
-        response = self._client.converse(
-            modelId=self._routine_model_id,
-            messages=[{"role": "user", "content": [{"text": f"{SPECIALIST_PROMPTS[specialist]}\n\nContext:\n{context}"}]}],
-            inferenceConfig={"maxTokens": 1600, "temperature": 0.2},
-            guardrailConfig={"guardrailIdentifier": self._guardrail_id, "guardrailVersion": "DRAFT", "trace": "enabled"},
-        )
+        try:
+            response = self._client.converse(
+                modelId=self._routine_model_id,
+                messages=[{"role": "user", "content": [{"text": f"{SPECIALIST_PROMPTS[specialist]}\n\nContext:\n{context}"}]}],
+                inferenceConfig={"maxTokens": 1600, "temperature": 0.2},
+                guardrailConfig={"guardrailIdentifier": self._guardrail_id, "guardrailVersion": "DRAFT", "trace": "enabled"},
+            )
+        except Exception as error:
+            error_response = getattr(error, "response", {}) or {}
+            error_details = error_response.get("Error", {}) if isinstance(error_response, dict) else {}
+            logger.exception(
+                "Bedrock specialist Converse failed model_id=%s region=%s specialist=%s guardrail_configured=%s error_type=%s error_code=%s",
+                self._routine_model_id,
+                getattr(getattr(self._client, "meta", None), "region_name", "unknown"),
+                specialist,
+                bool(self._guardrail_id),
+                type(error).__name__,
+                error_details.get("Code", "unknown"),
+            )
+            raise
         return response["output"]["message"]["content"][0]["text"]

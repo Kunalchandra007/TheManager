@@ -158,7 +158,16 @@ def create_app(allowed_origins: list[str] | None = None) -> FastAPI:
         except ValueError as error:
             raise HTTPException(status_code=503, detail={"kind": ErrorKind.DATABASE, "message": str(error)}) from error
         except Exception as error:
-            raise HTTPException(status_code=502, detail={"kind": ErrorKind.AI, "message": str(error)}) from error
+            error_response = getattr(error, "response", {}) or {}
+            aws_error = error_response.get("Error", {}) if isinstance(error_response, dict) else {}
+            detail = {
+                "kind": ErrorKind.AI,
+                "message": " ".join(str(error).split())[:500],
+                "error_type": type(error).__name__,
+            }
+            if aws_error.get("Code"):
+                detail["error_code"] = aws_error["Code"]
+            raise HTTPException(status_code=502, detail=detail) from error
 
     @app.post("/workflow/run")
     async def run_workflow(_: dict[str, Any] = Depends(require_authenticated_user)) -> dict[str, str]:

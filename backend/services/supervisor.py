@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any, Callable
 
 
 SPECIALISTS = ("schedule", "political", "tariff", "logistics", "reporting", "assistant")
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -45,7 +47,19 @@ class BedrockSupervisor:
                 "guardrailVersion": "DRAFT",
                 "trace": "enabled",
             }
-        response = self._client.converse(**request)
+        try:
+            response = self._client.converse(**request)
+        except Exception as error:
+            error_response = getattr(error, "response", {}) or {}
+            error_details = error_response.get("Error", {}) if isinstance(error_response, dict) else {}
+            logger.exception(
+                "Bedrock supervisor Converse failed model_id=%s region=%s error_type=%s error_code=%s",
+                self.model_id,
+                getattr(getattr(self._client, "meta", None), "region_name", "unknown"),
+                type(error).__name__,
+                error_details.get("Code", "unknown"),
+            )
+            raise
         text = response["output"]["message"]["content"][0]["text"]
         payload = json.loads(text)
         specialists = [name for name in payload.get("specialists", []) if name in SPECIALISTS]

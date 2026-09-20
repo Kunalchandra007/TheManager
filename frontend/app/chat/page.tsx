@@ -22,6 +22,26 @@ import { authenticatedFetch } from '@/lib/authenticated-fetch';
 
 const DEMO_QUESTION = 'What are the top procurement risks for this supply chain?';
 
+const getErrorMessage = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+
+  if (value && typeof value === 'object') {
+    const objectValue = value as Record<string, unknown>;
+
+    if (typeof objectValue.message === 'string') return objectValue.message;
+    if (typeof objectValue.detail === 'string') return objectValue.detail;
+    if (typeof objectValue.error === 'string') return objectValue.error;
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return 'Unknown error';
+    }
+  }
+
+  return String(value);
+};
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -158,7 +178,7 @@ export default function ChatPage() {
         const errorMessage: ChatMessage = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `Error: ${data.error || data.detail || 'Something went wrong'}`,
+          content: `Error: ${getErrorMessage(data.error || data.detail || 'Something went wrong')}`,
         };
         setMessages((prev) => [...prev, errorMessage]);
       }
