@@ -158,7 +158,7 @@ export default function ChatPage() {
         const errorMessage: ChatMessage = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `Error: ${data.error || 'Something went wrong'}`,
+          content: `Error: ${data.error || data.detail || 'Something went wrong'}`,
         };
         setMessages((prev) => [...prev, errorMessage]);
       }

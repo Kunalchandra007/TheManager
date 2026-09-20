@@ -43,9 +43,31 @@ def require_authenticated_user(authorization: str | None = Header(default=None))
                 detail="Authentication service unavailable",
             ) from error
 
-        claims = jwt.decode(token, keys, algorithms=["RS256"], audience=client_id, issuer=issuer)
-        if claims.get("token_use") not in {"id", "access"}:
+        token_use = jwt.get_unverified_claims(token).get("token_use")
+        if token_use == "access":
+            claims = jwt.decode(
+                token,
+                keys,
+                algorithms=["RS256"],
+                issuer=issuer,
+                options={"verify_aud": False},
+            )
+            if claims.get("client_id") != client_id:
+                raise JWTError("Invalid access token client")
+        elif token_use == "id":
+            claims = jwt.decode(
+                token,
+                keys,
+                algorithms=["RS256"],
+                audience=client_id,
+                issuer=issuer,
+            )
+        else:
             raise JWTError("Unsupported token type")
+
+        if claims.get("token_use") != token_use:
+            raise JWTError("Token use mismatch")
+
         return claims
     except JWTError as error:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token") from error
