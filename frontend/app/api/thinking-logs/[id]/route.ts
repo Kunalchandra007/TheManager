@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const id = (await params).id;
-    const apiUrl = `http://localhost:8000/api/thinking-logs-by-session-id/${id}`;
+    const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
+    const apiUrl = `${backendUrl}/api/thinking-logs-by-session-id/${id}`;
 
     const response = await fetch(apiUrl);
     const data = await response.json();

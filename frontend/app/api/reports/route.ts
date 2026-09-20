@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('http://localhost:8000/api/reports');
+    const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
+    const response = await fetch(`${backendUrl}/api/reports`);
     const data = await response.json();
     console.log(data);
 

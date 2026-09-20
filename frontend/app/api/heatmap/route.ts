@@ -13,8 +13,9 @@ export async function GET(request: Request) {
     }
 
     // Forward the request to the backend
+    const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
     const response = await fetch(
-      `http://localhost:8000/api/heatmap?conversation_id=${conversation_id}&session_id=${session_id}`
+      `${backendUrl}/api/heatmap?conversation_id=${conversation_id}&session_id=${session_id}`
     );
 
     if (!response.ok) {

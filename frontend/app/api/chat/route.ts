@@ -17,14 +17,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await fetch('http://localhost:8000/api/chat', {
+    const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
+    const response = await fetch(`${backendUrl}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         message,
-        session_id: session_id || undefined, // Only include session_id if it exists
+        session_id: session_id || undefined,
       }),
     });
 

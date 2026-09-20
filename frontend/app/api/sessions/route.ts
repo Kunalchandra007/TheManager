@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('http://localhost:8000/api/session-ids');
+    const backendUrl = process.env.THEMANAGER_API_URL ?? 'http://localhost:8000';
+    const response = await fetch(`${backendUrl}/api/session-ids`);
     const data = await response.json();
 
     return NextResponse.json({
