@@ -11,6 +11,7 @@ class ApiStack(Stack):
         self.api_role = iam.Role(self, "ApiRole", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"))
         self.api_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"))
         self.api_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AWSXRayDaemonWriteAccess"))
+        supervisor_model_resource = supervisor_model_id if supervisor_model_id.startswith("arn:") else self.format_arn(service="bedrock", region=aws_region, resource=f"inference-profile/{supervisor_model_id}")
         routine_model_resource = routine_model_id if routine_model_id.startswith("arn:") else self.format_arn(service="bedrock", region=aws_region, resource=f"inference-profile/{routine_model_id}")
         self.api_role.add_to_policy(
             iam.PolicyStatement(
@@ -19,7 +20,7 @@ class ApiStack(Stack):
                     "bedrock:InvokeModelWithResponseStream",
                 ],
                 resources=[
-                    supervisor_model_id,
+                    supervisor_model_resource,
                     routine_model_resource,
                     "arn:aws:bedrock:ap-northeast-1::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
                     "arn:aws:bedrock:ap-northeast-2::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",

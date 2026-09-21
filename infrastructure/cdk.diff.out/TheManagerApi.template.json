@@ -1,0 +1,658 @@
+{
+ "Resources": {
+  "ApiRole1873F438": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AWSXRayDaemonWriteAccess"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/ApiRole/Resource"
+   }
+  },
+  "ApiRoleDefaultPolicyCFEBAD31": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":bedrock:ap-south-1:125474112843:inference-profile/apac.amazon.nova-pro-v1:0"
+          ]
+         ]
+        },
+        "arn:aws:bedrock:ap-northeast-1::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-northeast-2::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-northeast-3::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-south-1::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-south-2::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-southeast-1::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-southeast-2::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+        "arn:aws:bedrock:ap-southeast-4::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0"
+       ]
+      },
+      {
+       "Action": "bedrock:ApplyGuardrail",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "TheManagerAgents:ExportsOutputFnGetAttAgentGuardrailGuardrailArn19EDDB14"
+       }
+      },
+      {
+       "Action": [
+        "aws-marketplace:ViewSubscriptions",
+        "aws-marketplace:Subscribe"
+       ],
+       "Condition": {
+        "StringEquals": {
+         "aws:CalledViaLast": "bedrock.amazonaws.com"
+        }
+       },
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttReports65402A0AArn549BAC56"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttReports65402A0AArn549BAC56"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "TheManagerData:ExportsOutputRefAuroraCredentials20EDD625319D68A2"
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":secretsmanager:ap-south-1:125474112843:secret:themanager/tavily-??????"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttSessions8896A56DArn139254BE"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttSessions8896A56DArn139254BE"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttEventsD32975C2Arn3A906F6E"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttEventsD32975C2Arn3A906F6E"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttThinkingLogs1F1B9D35Arn8365B4A0"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttThinkingLogs1F1B9D35Arn8365B4A0"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAlerts91F83244ArnA9D70E57"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAlerts91F83244ArnA9D70E57"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttActions9CCA2BC5Arn1FEEC3AA"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttActions9CCA2BC5Arn1FEEC3AA"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttRiskSnapshots0177979DArn6556D082"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttRiskSnapshots0177979DArn6556D082"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttWorkflowRuns964263F5Arn28C2BE1F"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttWorkflowRuns964263F5Arn28C2BE1F"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "rds-data:ExecuteStatement",
+        "rds-data:BatchExecuteStatement"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAuroraClusterDBClusterArnCC59085D"
+       }
+      },
+      {
+       "Action": "states:StartExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "TheManagerWorkflow:ExportsOutputRefTheManagerWorkflow8E5DAF97320E8311"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ApiRoleDefaultPolicyCFEBAD31",
+    "Roles": [
+     {
+      "Ref": "ApiRole1873F438"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/ApiRole/DefaultPolicy/Resource"
+   }
+  },
+  "ApiF70053CD": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ImageUri": {
+      "Fn::Sub": "125474112843.dkr.ecr.ap-south-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-125474112843-ap-south-1:f557486918fdd0304fcae5c212407553fd39fbd621cf6b0a363f34213b9e1b02"
+     }
+    },
+    "Environment": {
+     "Variables": {
+      "THEMANAGER_AWS_REGION": "ap-south-1",
+      "BEDROCK_SUPERVISOR_MODEL_ID": "apac.amazon.nova-pro-v1:0",
+      "BEDROCK_ROUTINE_MODEL_ID": "apac.amazon.nova-pro-v1:0",
+      "BEDROCK_GUARDRAIL_ID": {
+       "Fn::ImportValue": "TheManagerAgents:ExportsOutputFnGetAttAgentGuardrailGuardrailArn19EDDB14"
+      },
+      "REPORT_BUCKET": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefReports65402A0A5E09D1ED"
+      },
+      "AURORA_CLUSTER_ARN": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAuroraClusterDBClusterArnCC59085D"
+      },
+      "AURORA_SECRET_ARN": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefAuroraCredentials20EDD625319D68A2"
+      },
+      "TAVILY_SECRET_NAME": "themanager/tavily",
+      "SESSIONS_TABLE": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefSessions8896A56D1C695576"
+      },
+      "EVENTS_TABLE": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefEventsD32975C26DE279B4"
+      },
+      "WORKFLOW_RUNS_TABLE": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefWorkflowRuns964263F5F783BA8F"
+      },
+      "WORKFLOW_STATE_MACHINE_ARN": {
+       "Fn::ImportValue": "TheManagerWorkflow:ExportsOutputRefTheManagerWorkflow8E5DAF97320E8311"
+      },
+      "COGNITO_USER_POOL_ID": {
+       "Fn::ImportValue": "TheManagerAgents:ExportsOutputRefUsers0A0EEA89A1309EA5"
+      },
+      "COGNITO_CLIENT_ID": {
+       "Fn::ImportValue": "TheManagerAgents:ExportsOutputRefUsersWebClient8EE36D427F5C395C"
+      }
+     }
+    },
+    "MemorySize": 2048,
+    "PackageType": "Image",
+    "Role": {
+     "Fn::GetAtt": [
+      "ApiRole1873F438",
+      "Arn"
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "Timeout": 900,
+    "TracingConfig": {
+     "Mode": "Active"
+    }
+   },
+   "DependsOn": [
+    "ApiRoleDefaultPolicyCFEBAD31",
+    "ApiRole1873F438"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/Api/Resource",
+    "aws:asset:path": "asset.f557486918fdd0304fcae5c212407553fd39fbd621cf6b0a363f34213b9e1b02",
+    "aws:asset:dockerfile-path": "Dockerfile.api",
+    "aws:asset:property": "Code.ImageUri"
+   }
+  },
+  "ApiFunctionUrl46E4ABDE": {
+   "Type": "AWS::Lambda::Url",
+   "Properties": {
+    "AuthType": "NONE",
+    "Cors": {
+     "AllowHeaders": [
+      "Authorization",
+      "Content-Type"
+     ],
+     "AllowMethods": [
+      "*"
+     ],
+     "AllowOrigins": [
+      "*"
+     ]
+    },
+    "TargetFunctionArn": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/Api/FunctionUrl/Resource"
+   }
+  },
+  "Apiinvokefunctionurl01061C10": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunctionUrl",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "Arn"
+     ]
+    },
+    "FunctionUrlAuthType": "NONE",
+    "Principal": "*"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/Api/invoke-function-url"
+   }
+  },
+  "ApiinvokefunctionF0B78F9A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "Arn"
+     ]
+    },
+    "InvokedViaFunctionUrl": true,
+    "Principal": "*"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/Api/invoke-function"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02My27CQAxFv4X9xA3pousCQmJFFNQ1MoMJJvNAY0coivLv1fASq3N8r3UrqH5KKGd4k8Ieu8LxAcadou0M3mQ/MnoYm+jILE/hzjo6tkM+HzYZh/5wRBhX0XaUNh5bWvfBKseQ397+kr/kcv5ETcmzCMcwGbJpjyKkAh9jvznJHTR0jcIa07BAocncm51iy6HNW9ter71Oph70HMPXN8wrmJezizAXqQ/KnqB58B8ZrYqo+QAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerApi/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ApiUrl": {
+   "Value": {
+    "Fn::GetAtt": [
+     "ApiFunctionUrl46E4ABDE",
+     "FunctionUrl"
+    ]
+   }
+  },
+  "ExportsOutputFnGetAttApiFunctionUrl46E4ABDEFunctionUrl9002A90E": {
+   "Value": {
+    "Fn::GetAtt": [
+     "ApiFunctionUrl46E4ABDE",
+     "FunctionUrl"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerApi:ExportsOutputFnGetAttApiFunctionUrl46E4ABDEFunctionUrl9002A90E"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

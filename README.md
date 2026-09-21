@@ -276,7 +276,7 @@ For local AWS-target development, create an uncommitted `.env` file with resourc
 
 ```
 AWS_REGION=ap-south-1
-BEDROCK_SUPERVISOR_MODEL_ID=apac.anthropic.claude-sonnet-4-20250514-v1:0
+BEDROCK_SUPERVISOR_MODEL_ID=apac.amazon.nova-pro-v1:0
 BEDROCK_ROUTINE_MODEL_ID=apac.amazon.nova-pro-v1:0
 REPORT_BUCKET=your-s3-report-bucket
 AURORA_CLUSTER_ARN=your-aurora-cluster-arn

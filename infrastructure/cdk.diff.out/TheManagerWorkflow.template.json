@@ -1,0 +1,925 @@
+{
+ "Resources": {
+  "TheManagerAlertsF57DAB75": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "DisplayName": "TheManager alerts",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/TheManagerAlerts/Resource"
+   }
+  },
+  "WorkflowDeadLetterQueueB2231F73": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "MessageRetentionPeriod": 1209600,
+    "SqsManagedSseEnabled": true,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/WorkflowDeadLetterQueue/Resource"
+   }
+  },
+  "WorkflowDeadLetterQueuePolicy4AB67604": {
+   "Type": "AWS::SQS::QueuePolicy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sqs:SendMessage",
+       "Condition": {
+        "ArnEquals": {
+         "aws:SourceArn": {
+          "Fn::GetAtt": [
+           "DailyTheManager5A8AE789",
+           "Arn"
+          ]
+         }
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "events.amazonaws.com"
+       },
+       "Resource": {
+        "Fn::GetAtt": [
+         "WorkflowDeadLetterQueueB2231F73",
+         "Arn"
+        ]
+       },
+       "Sid": "AllowEventRuleTheManagerWorkflowDailyTheManager55301B4B"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Queues": [
+     {
+      "Ref": "WorkflowDeadLetterQueueB2231F73"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/WorkflowDeadLetterQueue/Policy/Resource"
+   }
+  },
+  "WorkflowWorkerRoleBF2CA6DD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AWSXRayDaemonWriteAccess"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/WorkflowWorkerRole/Resource"
+   }
+  },
+  "WorkflowWorkerRoleDefaultPolicyDE04ADC0": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+        "bedrock:ApplyGuardrail"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":bedrock:ap-south-1:125474112843:inference-profile/apac.amazon.nova-pro-v1:0"
+          ]
+         ]
+        },
+        {
+         "Fn::ImportValue": "TheManagerAgents:ExportsOutputFnGetAttAgentGuardrailGuardrailArn19EDDB14"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttReports65402A0AArn549BAC56"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttReports65402A0AArn549BAC56"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "TheManagerData:ExportsOutputRefAuroraCredentials20EDD625319D68A2"
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":secretsmanager:ap-south-1:125474112843:secret:themanager/tavily-??????"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttSessions8896A56DArn139254BE"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttSessions8896A56DArn139254BE"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttEventsD32975C2Arn3A906F6E"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttEventsD32975C2Arn3A906F6E"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttThinkingLogs1F1B9D35Arn8365B4A0"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttThinkingLogs1F1B9D35Arn8365B4A0"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAlerts91F83244ArnA9D70E57"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAlerts91F83244ArnA9D70E57"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttActions9CCA2BC5Arn1FEEC3AA"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttActions9CCA2BC5Arn1FEEC3AA"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttRiskSnapshots0177979DArn6556D082"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttRiskSnapshots0177979DArn6556D082"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttWorkflowRuns964263F5Arn28C2BE1F"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttWorkflowRuns964263F5Arn28C2BE1F"
+        }
+       ]
+      },
+      {
+       "Action": [
+        "rds-data:ExecuteStatement",
+        "rds-data:BatchExecuteStatement",
+        "rds-data:BeginTransaction",
+        "rds-data:CommitTransaction",
+        "rds-data:RollbackTransaction"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAuroraClusterDBClusterArnCC59085D"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WorkflowWorkerRoleDefaultPolicyDE04ADC0",
+    "Roles": [
+     {
+      "Ref": "WorkflowWorkerRoleBF2CA6DD"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/WorkflowWorkerRole/DefaultPolicy/Resource"
+   }
+  },
+  "WorkflowWorker475B735B": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ImageUri": {
+      "Fn::Sub": "125474112843.dkr.ecr.ap-south-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-125474112843-ap-south-1:78e6cd9118c44249606e4225c1570d1ede0d8113d74de72ef754b5912260dec4"
+     }
+    },
+    "Environment": {
+     "Variables": {
+      "THEMANAGER_AWS_REGION": "ap-south-1",
+      "BEDROCK_SUPERVISOR_MODEL_ID": "apac.amazon.nova-pro-v1:0",
+      "BEDROCK_ROUTINE_MODEL_ID": "apac.amazon.nova-pro-v1:0",
+      "BEDROCK_GUARDRAIL_ID": {
+       "Fn::ImportValue": "TheManagerAgents:ExportsOutputFnGetAttAgentGuardrailGuardrailArn19EDDB14"
+      },
+      "REPORT_BUCKET": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefReports65402A0A5E09D1ED"
+      },
+      "AURORA_CLUSTER_ARN": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputFnGetAttAuroraClusterDBClusterArnCC59085D"
+      },
+      "AURORA_SECRET_ARN": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefAuroraCredentials20EDD625319D68A2"
+      },
+      "TAVILY_SECRET_NAME": "themanager/tavily",
+      "SESSIONS_TABLE": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefSessions8896A56D1C695576"
+      },
+      "EVENTS_TABLE": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefEventsD32975C26DE279B4"
+      },
+      "WORKFLOW_RUNS_TABLE": {
+       "Fn::ImportValue": "TheManagerData:ExportsOutputRefWorkflowRuns964263F5F783BA8F"
+      }
+     }
+    },
+    "MemorySize": 2048,
+    "PackageType": "Image",
+    "Role": {
+     "Fn::GetAtt": [
+      "WorkflowWorkerRoleBF2CA6DD",
+      "Arn"
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "Timeout": 900,
+    "TracingConfig": {
+     "Mode": "Active"
+    }
+   },
+   "DependsOn": [
+    "WorkflowWorkerRoleDefaultPolicyDE04ADC0",
+    "WorkflowWorkerRoleBF2CA6DD"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/WorkflowWorker/Resource",
+    "aws:asset:path": "asset.78e6cd9118c44249606e4225c1570d1ede0d8113d74de72ef754b5912260dec4",
+    "aws:asset:dockerfile-path": "Dockerfile.worker",
+    "aws:asset:property": "Code.ImageUri"
+   }
+  },
+  "TheManagerWorkflowRole51BE13F8": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "states.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/TheManagerWorkflow/Role/Resource"
+   }
+  },
+  "TheManagerWorkflowRoleDefaultPolicy84FAD57F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "WorkflowWorker475B735B",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "WorkflowWorker475B735B",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords",
+        "xray:GetSamplingRules",
+        "xray:GetSamplingTargets"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "TheManagerWorkflowRoleDefaultPolicy84FAD57F",
+    "Roles": [
+     {
+      "Ref": "TheManagerWorkflowRole51BE13F8"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/TheManagerWorkflow/Role/DefaultPolicy/Resource"
+   }
+  },
+  "TheManagerWorkflow8E5DAF97": {
+   "Type": "AWS::StepFunctions::StateMachine",
+   "Properties": {
+    "DefinitionString": {
+     "Fn::Join": [
+      "",
+      [
+       "{\"StartAt\":\"RunRiskAnalysis\",\"States\":{\"RunRiskAnalysis\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "WorkflowWorker475B735B",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}}},\"TimeoutSeconds\":900}"
+      ]
+     ]
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "TheManagerWorkflowRole51BE13F8",
+      "Arn"
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TracingConfiguration": {
+     "Enabled": true
+    }
+   },
+   "DependsOn": [
+    "TheManagerWorkflowRoleDefaultPolicy84FAD57F",
+    "TheManagerWorkflowRole51BE13F8"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/TheManagerWorkflow/Resource"
+   }
+  },
+  "TheManagerWorkflowEventsRole06260FAA": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "events.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/TheManagerWorkflow/EventsRole/Resource"
+   }
+  },
+  "TheManagerWorkflowEventsRoleDefaultPolicyC837AD62": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "states:StartExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "TheManagerWorkflow8E5DAF97"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "TheManagerWorkflowEventsRoleDefaultPolicyC837AD62",
+    "Roles": [
+     {
+      "Ref": "TheManagerWorkflowEventsRole06260FAA"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/TheManagerWorkflow/EventsRole/DefaultPolicy/Resource"
+   }
+  },
+  "DailyTheManager5A8AE789": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "ScheduleExpression": "cron(0 5 * * ? *)",
+    "State": "ENABLED",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "Targets": [
+     {
+      "Arn": {
+       "Ref": "TheManagerWorkflow8E5DAF97"
+      },
+      "DeadLetterConfig": {
+       "Arn": {
+        "Fn::GetAtt": [
+         "WorkflowDeadLetterQueueB2231F73",
+         "Arn"
+        ]
+       }
+      },
+      "Id": "Target0",
+      "RoleArn": {
+       "Fn::GetAtt": [
+        "TheManagerWorkflowEventsRole06260FAA",
+        "Arn"
+       ]
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/DailyTheManager/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12PTW/CMAyGfwv31CvdYed9aBLSprGye2WCKaFt0tUOqIry36emsKFd7NevH8t2AcVDDvkCz5zpXZO1ZgthI6gbhWeuAluG8OV6o9Xz3iYRFX8zhE9PniZzFimuXWv0+GvOZVQGOwilaxOe8h94ZVrstjuE8OJ0Q8Oqw5pevdVinJ2wq46K9FAhMwnDDfs4OVMPSuodG3HD+IRMioX6/WWYK0FuGN7SrpU9ueYfkH4Xekd9MDade1tHRSeywhBKf3nGtxSjSts3grWx9WR/eOm9RLUe5eDs3T0sC1jmiyMbkw3eiukIyjn/ABTL2ziBAQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerWorkflow/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "WorkflowStateMachineArn": {
+   "Value": {
+    "Ref": "TheManagerWorkflow8E5DAF97"
+   }
+  },
+  "AlertsTopicArn": {
+   "Value": {
+    "Ref": "TheManagerAlertsF57DAB75"
+   }
+  },
+  "ExportsOutputRefTheManagerWorkflow8E5DAF97320E8311": {
+   "Value": {
+    "Ref": "TheManagerWorkflow8E5DAF97"
+   },
+   "Export": {
+    "Name": "TheManagerWorkflow:ExportsOutputRefTheManagerWorkflow8E5DAF97320E8311"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

@@ -48,6 +48,7 @@ class WorkflowStack(Stack):
         role = iam.Role(self, name, assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"))
         role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"))
         role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AWSXRayDaemonWriteAccess"))
+        supervisor_model_resource = supervisor_model_id if supervisor_model_id.startswith("arn:") else self.format_arn(service="bedrock", region=aws_region, resource=f"inference-profile/{supervisor_model_id}")
         routine_model_resource = routine_model_id if routine_model_id.startswith("arn:") else self.format_arn(service="bedrock", region=aws_region, resource=f"inference-profile/{routine_model_id}")
-        role.add_to_policy(iam.PolicyStatement(actions=["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream", "bedrock:ApplyGuardrail"], resources=[supervisor_model_id, routine_model_resource, agents.guardrail.attr_guardrail_arn]))
+        role.add_to_policy(iam.PolicyStatement(actions=["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream", "bedrock:ApplyGuardrail"], resources=[supervisor_model_resource, routine_model_resource, agents.guardrail.attr_guardrail_arn]))
         return role

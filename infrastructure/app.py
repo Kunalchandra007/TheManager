@@ -24,9 +24,7 @@ if not budget_notification_email:
     raise ValueError("Set BUDGET_NOTIFICATION_EMAIL before synthesizing or deploying the Data stack.")
 
 account = os.environ.get("CDK_DEFAULT_ACCOUNT")
-supervisor_model_id = os.environ.get("BEDROCK_SUPERVISOR_MODEL_ID") or (
-    f"arn:aws:bedrock:{aws_region}:{account}:inference-profile/apac.anthropic.claude-sonnet-4-20250514-v1:0"
-)
+supervisor_model_id = os.environ.get("BEDROCK_SUPERVISOR_MODEL_ID") or "apac.amazon.nova-pro-v1:0"
 routine_model_id = os.environ.get("BEDROCK_ROUTINE_MODEL_ID") or "apac.amazon.nova-pro-v1:0"
 tavily_secret_name = os.environ.get("TAVILY_SECRET_NAME") or "themanager/tavily"
 

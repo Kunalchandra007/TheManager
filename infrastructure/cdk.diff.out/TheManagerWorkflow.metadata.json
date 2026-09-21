@@ -1,0 +1,287 @@
+{
+  "/TheManagerWorkflow": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    },
+    {
+      "type": "aws:cdk:warning",
+      "data": "No cross-stack-reference strength configured, defaulting to \"strong\". We recommend you set feature flag \"@aws-cdk/core:defaultCrossStackReferences\" to \"both\", then deploy everywhere, then set it to \"weak\". Alternatively, set it to \"strong\" explicitly to lock in the current producer-protecting behavior. (See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/README.md#reference-strength) [ack: @aws-cdk/core:crossStackReferencesDefaultStrong]",
+      "trace": [
+        "Annotations.addMessage (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:3506)",
+        "Annotations.addWarningV2 (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:2194)",
+        "resolveValue (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\private\\refs.js:1:6980)",
+        "resolveReferences (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\private\\refs.js:1:4848)",
+        "prepareApp (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\private\\prepare-app.js:1:1240)",
+        "synthesize (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:1:2625)",
+        "App.synth (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\stage.js:1:5061)",
+        "App.synth (C:\\Users\\kunal\\AppData\\Local\\Temp\\jsii-kernel-3YfVBX\\node_modules\\aws-cdk-lib\\core\\lib\\app.js:1:5008)",
+        "C:\\Users\\kunal\\AppData\\Local\\Temp\\tmpng8nidbs\\lib\\program.js:1:55656",
+        "Kernel._Kernel_ensureSync (C:\\Users\\kunal\\AppData\\Local\\Temp\\tmpng8nidbs\\lib\\program.js:1:71277)",
+        "Kernel.invoke (C:\\Users\\kunal\\AppData\\Local\\Temp\\tmpng8nidbs\\lib\\program.js:1:55601)",
+        "KernelHost.processRequest (C:\\Users\\kunal\\AppData\\Local\\Temp\\tmpng8nidbs\\lib\\program.js:1:228024)",
+        "KernelHost.run (C:\\Users\\kunal\\AppData\\Local\\Temp\\tmpng8nidbs\\lib\\program.js:1:227008)",
+        "Immediate._onImmediate (C:\\Users\\kunal\\AppData\\Local\\Temp\\tmpng8nidbs\\lib\\program.js:1:227052)",
+        "process.processImmediate (node:internal/timers:485:21)"
+      ]
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "Application",
+          "value": "themanager"
+        },
+        {
+          "key": "CostCenter",
+          "value": "demo"
+        },
+        {
+          "key": "Environment",
+          "value": "dev"
+        },
+        {
+          "key": "ManagedBy",
+          "value": "AWS-CDK"
+        }
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/WorkflowStateMachineArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkflowStateMachineArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/AlertsTopicArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AlertsTopicArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/TheManagerAlerts/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TheManagerAlertsF57DAB75"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/WorkflowDeadLetterQueue/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkflowDeadLetterQueueB2231F73"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/WorkflowWorkerRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkflowWorkerRoleBF2CA6DD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/WorkflowWorker/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkflowWorker475B735B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/TheManagerWorkflow/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TheManagerWorkflow8E5DAF97"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/DailyTheManager/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DailyTheManager5A8AE789"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/Exports/Output{\"Ref\":\"TheManagerWorkflow8E5DAF97\"}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsOutputRefTheManagerWorkflow8E5DAF97320E8311"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/WorkflowDeadLetterQueue/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkflowDeadLetterQueuePolicy4AB67604"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/WorkflowWorkerRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkflowWorkerRoleDefaultPolicyDE04ADC0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/TheManagerWorkflow/Role/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TheManagerWorkflowRole51BE13F8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/TheManagerWorkflow/EventsRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TheManagerWorkflowEventsRole06260FAA"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/TheManagerWorkflow/Role/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TheManagerWorkflowRoleDefaultPolicy84FAD57F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/TheManagerWorkflow/TheManagerWorkflow/EventsRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TheManagerWorkflowEventsRoleDefaultPolicyC837AD62"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ]
+}

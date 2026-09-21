@@ -1,0 +1,1256 @@
+{
+ "Resources": {
+  "Reports65402A0A": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "aws-cdk:auto-delete-objects",
+      "Value": "true"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "VersioningConfiguration": {
+     "Status": "Enabled"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Reports/Resource"
+   }
+  },
+  "ReportsPolicyA13B441D": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "Reports65402A0A"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "Reports65402A0A",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "Reports65402A0A",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:PutBucketPolicy",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::GetAtt": [
+          "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+          "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "Reports65402A0A",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "Reports65402A0A",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Reports/Policy/Resource"
+   }
+  },
+  "ReportsAutoDeleteObjectsCustomResource89477CA3": {
+   "Type": "Custom::S3AutoDeleteObjects",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "Reports65402A0A"
+    }
+   },
+   "DependsOn": [
+    "ReportsPolicyA13B441D"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Reports/AutoDeleteObjectsCustomResource/Default"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-125474112843-ap-south-1",
+     "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs24.x",
+    "Description": {
+     "Fn::Join": [
+      "",
+      [
+       "Lambda function for auto-deleting objects in ",
+       {
+        "Ref": "Reports65402A0A"
+       },
+       " S3 bucket."
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+    "aws:asset:property": "Code"
+   }
+  },
+  "MonthlyCostBudget": {
+   "Type": "AWS::Budgets::Budget",
+   "Properties": {
+    "Budget": {
+     "BudgetLimit": {
+      "Amount": 50,
+      "Unit": "USD"
+     },
+     "BudgetName": "themanager-dev-monthly",
+     "BudgetType": "COST",
+     "TimeUnit": "MONTHLY"
+    },
+    "NotificationsWithSubscribers": [
+     {
+      "Notification": {
+       "ComparisonOperator": "GREATER_THAN",
+       "NotificationType": "ACTUAL",
+       "Threshold": 80,
+       "ThresholdType": "PERCENTAGE"
+      },
+      "Subscribers": [
+       {
+        "Address": "budget@example.test",
+        "SubscriptionType": "EMAIL"
+       }
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/MonthlyCostBudget"
+   }
+  },
+  "Sessions8896A56D": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "session_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "session_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Sessions/Resource"
+   }
+  },
+  "EventsD32975C2": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "event_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "event_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Events/Resource"
+   }
+  },
+  "ThinkingLogs1F1B9D35": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "thinking_log_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "thinking_log_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/ThinkingLogs/Resource"
+   }
+  },
+  "Alerts91F83244": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "alert_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "alert_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Alerts/Resource"
+   }
+  },
+  "Actions9CCA2BC5": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "action_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "action_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/Actions/Resource"
+   }
+  },
+  "RiskSnapshots0177979D": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "snapshot_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "snapshot_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/RiskSnapshots/Resource"
+   }
+  },
+  "WorkflowRuns964263F5": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "workflow_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "workflow_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "expires_at",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/WorkflowRuns/Resource"
+   }
+  },
+  "AuroraCredentials20EDD625": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "GenerateSecretString": {
+     "ExcludePunctuation": true,
+     "GenerateStringKey": "password",
+     "SecretStringTemplate": "{\"username\":\"themanager_admin\"}"
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/AuroraCredentials/Resource"
+   }
+  },
+  "DatabaseVpc73869E3A": {
+   "Type": "AWS::EC2::VPC",
+   "Properties": {
+    "CidrBlock": "10.0.0.0/16",
+    "EnableDnsHostnames": true,
+    "EnableDnsSupport": true,
+    "InstanceTenancy": "default",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     },
+     {
+      "Key": "Name",
+      "Value": "TheManagerData/DatabaseVpc"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/Resource"
+   }
+  },
+  "DatabaseVpcisolatedSubnet1SubnetD01F8F49": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "ap-south-1a",
+    "CidrBlock": "10.0.0.0/24",
+    "MapPublicIpOnLaunch": false,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "isolated"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Isolated"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     },
+     {
+      "Key": "Name",
+      "Value": "TheManagerData/DatabaseVpc/isolatedSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DatabaseVpc73869E3A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/isolatedSubnet1/Subnet"
+   }
+  },
+  "DatabaseVpcisolatedSubnet1RouteTable9DC6EA58": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     },
+     {
+      "Key": "Name",
+      "Value": "TheManagerData/DatabaseVpc/isolatedSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DatabaseVpc73869E3A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/isolatedSubnet1/RouteTable"
+   }
+  },
+  "DatabaseVpcisolatedSubnet1RouteTableAssociation6D2440B6": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "DatabaseVpcisolatedSubnet1RouteTable9DC6EA58"
+    },
+    "SubnetId": {
+     "Ref": "DatabaseVpcisolatedSubnet1SubnetD01F8F49"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/isolatedSubnet1/RouteTableAssociation"
+   }
+  },
+  "DatabaseVpcisolatedSubnet2Subnet5311C19F": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "ap-south-1b",
+    "CidrBlock": "10.0.1.0/24",
+    "MapPublicIpOnLaunch": false,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "isolated"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Isolated"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     },
+     {
+      "Key": "Name",
+      "Value": "TheManagerData/DatabaseVpc/isolatedSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DatabaseVpc73869E3A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/isolatedSubnet2/Subnet"
+   }
+  },
+  "DatabaseVpcisolatedSubnet2RouteTableFC8BD20C": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     },
+     {
+      "Key": "Name",
+      "Value": "TheManagerData/DatabaseVpc/isolatedSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DatabaseVpc73869E3A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/isolatedSubnet2/RouteTable"
+   }
+  },
+  "DatabaseVpcisolatedSubnet2RouteTableAssociation823D19E4": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "DatabaseVpcisolatedSubnet2RouteTableFC8BD20C"
+    },
+    "SubnetId": {
+     "Ref": "DatabaseVpcisolatedSubnet2Subnet5311C19F"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseVpc/isolatedSubnet2/RouteTableAssociation"
+   }
+  },
+  "DatabaseSecurityGroup7319C0F6": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "TheManager Aurora access is granted explicitly by application stacks.",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "255.255.255.255/32",
+      "Description": "Disallow all traffic",
+      "FromPort": 252,
+      "IpProtocol": "icmp",
+      "ToPort": 86
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "VpcId": {
+     "Ref": "DatabaseVpc73869E3A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/DatabaseSecurityGroup/Resource"
+   }
+  },
+  "AuroraSubnetGroup": {
+   "Type": "AWS::RDS::DBSubnetGroup",
+   "Properties": {
+    "DBSubnetGroupDescription": "TheManager Aurora isolated subnets",
+    "SubnetIds": [
+     {
+      "Ref": "DatabaseVpcisolatedSubnet1SubnetD01F8F49"
+     },
+     {
+      "Ref": "DatabaseVpcisolatedSubnet2Subnet5311C19F"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/AuroraSubnetGroup"
+   }
+  },
+  "AuroraCluster": {
+   "Type": "AWS::RDS::DBCluster",
+   "Properties": {
+    "BackupRetentionPeriod": 7,
+    "DBSubnetGroupName": {
+     "Ref": "AuroraSubnetGroup"
+    },
+    "DatabaseName": "themanager",
+    "DeletionProtection": false,
+    "EnableHttpEndpoint": true,
+    "Engine": "aurora-postgresql",
+    "MasterUserPassword": {
+     "Fn::Join": [
+      "",
+      [
+       "{{resolve:secretsmanager:",
+       {
+        "Ref": "AuroraCredentials20EDD625"
+       },
+       ":SecretString:password::}}"
+      ]
+     ]
+    },
+    "MasterUsername": {
+     "Fn::Join": [
+      "",
+      [
+       "{{resolve:secretsmanager:",
+       {
+        "Ref": "AuroraCredentials20EDD625"
+       },
+       ":SecretString:username::}}"
+      ]
+     ]
+    },
+    "ServerlessV2ScalingConfiguration": {
+     "MaxCapacity": 1,
+     "MinCapacity": 0.5
+    },
+    "StorageEncrypted": true,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ],
+    "VpcSecurityGroupIds": [
+     {
+      "Fn::GetAtt": [
+       "DatabaseSecurityGroup7319C0F6",
+       "GroupId"
+      ]
+     }
+    ]
+   },
+   "DependsOn": [
+    "AuroraSubnetGroup"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/AuroraCluster"
+   }
+  },
+  "AuroraServerlessInstance": {
+   "Type": "AWS::RDS::DBInstance",
+   "Properties": {
+    "DBClusterIdentifier": {
+     "Ref": "AuroraCluster"
+    },
+    "DBInstanceClass": "db.serverless",
+    "Engine": "aurora-postgresql",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "DependsOn": [
+    "AuroraCluster"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/AuroraServerlessInstance"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/5VOPW/CMBD9LWQ2LoShUjcSpKoTEalYqqpynCM1JDbynaGR5f9eJUaEjp387n065enzgi9m4opzWZ/mraq4L0nIExNX/PK44j5z8gTE8oOO6MMnnfpROnlJHmODH1d8lJBH69qR2UALBNvqCJIwCZ8sSoVpleyn1nj/ozsGShIEHeixOrDK1Q0Q8rF2gKzutehMXXH/LqoWhsERBIYgLRB2QosGLPfleA+GiAIDmXK/P8uB2xc5K6y6CILSVfpmvKOdcQT3hchP3BrRSCVIGc1KkM4q6l+tcefb2kQEZmvkPj/oTRZb7r5NlrcOCWw83jSS0BJCYLlDMt0O0Dgrxw9M+I9UWHNRNdhMILA1IlBJolG6YY/hraOzo8CKnr6NflrxZcqXi9kRlZpbp0l1wHfx/QXrjU8dQAIAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerData/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ReportBucketName": {
+   "Value": {
+    "Ref": "Reports65402A0A"
+   }
+  },
+  "DatabaseSecretArn": {
+   "Value": {
+    "Ref": "AuroraCredentials20EDD625"
+   }
+  },
+  "DatabaseClusterArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AuroraCluster",
+     "DBClusterArn"
+    ]
+   }
+  },
+  "ExportsOutputFnGetAttReports65402A0AArn549BAC56": {
+   "Value": {
+    "Fn::GetAtt": [
+     "Reports65402A0A",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttReports65402A0AArn549BAC56"
+   }
+  },
+  "ExportsOutputRefAuroraCredentials20EDD625319D68A2": {
+   "Value": {
+    "Ref": "AuroraCredentials20EDD625"
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputRefAuroraCredentials20EDD625319D68A2"
+   }
+  },
+  "ExportsOutputFnGetAttSessions8896A56DArn139254BE": {
+   "Value": {
+    "Fn::GetAtt": [
+     "Sessions8896A56D",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttSessions8896A56DArn139254BE"
+   }
+  },
+  "ExportsOutputFnGetAttEventsD32975C2Arn3A906F6E": {
+   "Value": {
+    "Fn::GetAtt": [
+     "EventsD32975C2",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttEventsD32975C2Arn3A906F6E"
+   }
+  },
+  "ExportsOutputFnGetAttThinkingLogs1F1B9D35Arn8365B4A0": {
+   "Value": {
+    "Fn::GetAtt": [
+     "ThinkingLogs1F1B9D35",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttThinkingLogs1F1B9D35Arn8365B4A0"
+   }
+  },
+  "ExportsOutputFnGetAttAlerts91F83244ArnA9D70E57": {
+   "Value": {
+    "Fn::GetAtt": [
+     "Alerts91F83244",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttAlerts91F83244ArnA9D70E57"
+   }
+  },
+  "ExportsOutputFnGetAttActions9CCA2BC5Arn1FEEC3AA": {
+   "Value": {
+    "Fn::GetAtt": [
+     "Actions9CCA2BC5",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttActions9CCA2BC5Arn1FEEC3AA"
+   }
+  },
+  "ExportsOutputFnGetAttRiskSnapshots0177979DArn6556D082": {
+   "Value": {
+    "Fn::GetAtt": [
+     "RiskSnapshots0177979D",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttRiskSnapshots0177979DArn6556D082"
+   }
+  },
+  "ExportsOutputFnGetAttWorkflowRuns964263F5Arn28C2BE1F": {
+   "Value": {
+    "Fn::GetAtt": [
+     "WorkflowRuns964263F5",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttWorkflowRuns964263F5Arn28C2BE1F"
+   }
+  },
+  "ExportsOutputFnGetAttAuroraClusterDBClusterArnCC59085D": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AuroraCluster",
+     "DBClusterArn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputFnGetAttAuroraClusterDBClusterArnCC59085D"
+   }
+  },
+  "ExportsOutputRefReports65402A0A5E09D1ED": {
+   "Value": {
+    "Ref": "Reports65402A0A"
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputRefReports65402A0A5E09D1ED"
+   }
+  },
+  "ExportsOutputRefSessions8896A56D1C695576": {
+   "Value": {
+    "Ref": "Sessions8896A56D"
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputRefSessions8896A56D1C695576"
+   }
+  },
+  "ExportsOutputRefEventsD32975C26DE279B4": {
+   "Value": {
+    "Ref": "EventsD32975C2"
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputRefEventsD32975C26DE279B4"
+   }
+  },
+  "ExportsOutputRefWorkflowRuns964263F5F783BA8F": {
+   "Value": {
+    "Ref": "WorkflowRuns964263F5"
+   },
+   "Export": {
+    "Name": "TheManagerData:ExportsOutputRefWorkflowRuns964263F5F783BA8F"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

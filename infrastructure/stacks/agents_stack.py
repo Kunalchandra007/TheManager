@@ -120,6 +120,15 @@ class AgentsStack(Stack):
                 resource=f"inference-profile/{routine_model_id}",
             )
         )
+        supervisor_model_resource = (
+            supervisor_model_id
+            if supervisor_model_id.startswith("arn:")
+            else self.format_arn(
+                service="bedrock",
+                region=aws_region,
+                resource=f"inference-profile/{supervisor_model_id}",
+            )
+        )
 
         self.agent_role.add_to_policy(
             iam.PolicyStatement(
@@ -129,7 +138,7 @@ class AgentsStack(Stack):
                     "bedrock:ApplyGuardrail",
                 ],
                 resources=[
-                    supervisor_model_id,
+                    supervisor_model_resource,
                     routine_model_resource,
                     self.guardrail.attr_guardrail_arn,
                 ],

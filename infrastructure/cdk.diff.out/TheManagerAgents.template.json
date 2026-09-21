@@ -1,0 +1,420 @@
+{
+ "Resources": {
+  "AgentLogs05C568C3": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "RetentionInDays": 30,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/AgentLogs/Resource"
+   }
+  },
+  "AgentExecutionRole8AD76C36": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "Execution role for TheManager agent compute.",
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AWSXRayDaemonWriteAccess"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/AgentExecutionRole/Resource"
+   }
+  },
+  "AgentExecutionRoleDefaultPolicyF9CB1199": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "AgentLogs05C568C3",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":secretsmanager:ap-south-1:125474112843:secret:themanager/tavily-??????"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+        "bedrock:ApplyGuardrail"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":bedrock:ap-south-1:125474112843:inference-profile/apac.amazon.nova-pro-v1:0"
+          ]
+         ]
+        },
+        {
+         "Fn::GetAtt": [
+          "AgentGuardrail",
+          "GuardrailArn"
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AgentExecutionRoleDefaultPolicyF9CB1199",
+    "Roles": [
+     {
+      "Ref": "AgentExecutionRole8AD76C36"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/AgentExecutionRole/DefaultPolicy/Resource"
+   }
+  },
+  "AgentGuardrail": {
+   "Type": "AWS::Bedrock::Guardrail",
+   "Properties": {
+    "BlockedInputMessaging": "This request cannot be processed.",
+    "BlockedOutputsMessaging": "The generated response was blocked by safety controls.",
+    "ContentPolicyConfig": {
+     "FiltersConfig": [
+      {
+       "InputStrength": "MEDIUM",
+       "OutputStrength": "MEDIUM",
+       "Type": "HATE"
+      },
+      {
+       "InputStrength": "MEDIUM",
+       "OutputStrength": "MEDIUM",
+       "Type": "INSULTS"
+      },
+      {
+       "InputStrength": "MEDIUM",
+       "OutputStrength": "MEDIUM",
+       "Type": "SEXUAL"
+      },
+      {
+       "InputStrength": "MEDIUM",
+       "OutputStrength": "MEDIUM",
+       "Type": "VIOLENCE"
+      },
+      {
+       "InputStrength": "MEDIUM",
+       "OutputStrength": "NONE",
+       "Type": "PROMPT_ATTACK"
+      }
+     ]
+    },
+    "Description": "Blocks harmful content and prompt attacks in TheManager agent calls.",
+    "Name": "themanager-dev-guardrail",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "themanager"
+     },
+     {
+      "Key": "CostCenter",
+      "Value": "demo"
+     },
+     {
+      "Key": "Environment",
+      "Value": "dev"
+     },
+     {
+      "Key": "ManagedBy",
+      "Value": "AWS-CDK"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/AgentGuardrail"
+   }
+  },
+  "Users0A0EEA89": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "verified_email",
+       "Priority": 1
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": true
+    },
+    "AutoVerifiedAttributes": [
+     "email"
+    ],
+    "EmailVerificationMessage": "The verification code to your new account is {####}",
+    "EmailVerificationSubject": "Verify your new account",
+    "Policies": {
+     "PasswordPolicy": {
+      "MinimumLength": 12,
+      "RequireLowercase": true,
+      "RequireNumbers": true,
+      "RequireSymbols": true,
+      "RequireUppercase": true
+     }
+    },
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "UserPoolTags": {
+     "Application": "themanager",
+     "CostCenter": "demo",
+     "Environment": "dev",
+     "ManagedBy": "AWS-CDK"
+    },
+    "UsernameAttributes": [
+     "email"
+    ],
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "The verification code to your new account is {####}",
+     "EmailSubject": "Verify your new account",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/Users/Resource"
+   }
+  },
+  "UsersWebClient8EE36D42": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AllowedOAuthFlows": [
+     "code"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "openid",
+     "email",
+     "profile"
+    ],
+    "CallbackURLs": [
+     "https://main.d1brodleufbcp.amplifyapp.com"
+    ],
+    "ExplicitAuthFlows": [
+     "ALLOW_USER_PASSWORD_AUTH",
+     "ALLOW_USER_SRP_AUTH",
+     "ALLOW_REFRESH_TOKEN_AUTH"
+    ],
+    "LogoutURLs": [
+     "https://main.d1brodleufbcp.amplifyapp.com"
+    ],
+    "PreventUserExistenceErrors": "ENABLED",
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "UserPoolId": {
+     "Ref": "Users0A0EEA89"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/Users/WebClient/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02NzQqDMBCEn6X3uFV76AN48FKoWHouMUa7NWYlP4iEvHtRsfQ038wwTA75NYX0xGebiHZIFDYQHo6LgfHZvoKi3kK4UV8a8hMrOn1wZMhHCDUpucabVqRQLKvdKbJGtobEAEWnS89NazgqJqjX6AjC00pTEal18eMDCoVSu/9qT2JktbTkjdiO795N3kVWLe5N+nyBLIcsPX0sYmK8djhKqHf9Ajsair3tAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TheManagerAgents/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "AgentRoleArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AgentExecutionRole8AD76C36",
+     "Arn"
+    ]
+   }
+  },
+  "UserPoolId": {
+   "Value": {
+    "Ref": "Users0A0EEA89"
+   }
+  },
+  "UserPoolClientId": {
+   "Value": {
+    "Ref": "UsersWebClient8EE36D42"
+   }
+  },
+  "GuardrailArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AgentGuardrail",
+     "GuardrailArn"
+    ]
+   }
+  },
+  "ExportsOutputFnGetAttAgentGuardrailGuardrailArn19EDDB14": {
+   "Value": {
+    "Fn::GetAtt": [
+     "AgentGuardrail",
+     "GuardrailArn"
+    ]
+   },
+   "Export": {
+    "Name": "TheManagerAgents:ExportsOutputFnGetAttAgentGuardrailGuardrailArn19EDDB14"
+   }
+  },
+  "ExportsOutputRefUsers0A0EEA89A1309EA5": {
+   "Value": {
+    "Ref": "Users0A0EEA89"
+   },
+   "Export": {
+    "Name": "TheManagerAgents:ExportsOutputRefUsers0A0EEA89A1309EA5"
+   }
+  },
+  "ExportsOutputRefUsersWebClient8EE36D427F5C395C": {
+   "Value": {
+    "Ref": "UsersWebClient8EE36D42"
+   },
+   "Export": {
+    "Name": "TheManagerAgents:ExportsOutputRefUsersWebClient8EE36D427F5C395C"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
